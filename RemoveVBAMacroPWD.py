@@ -422,7 +422,7 @@ def DecodeHashStructure(Struc):
         return ""
     GrbitKey = ord(Struc[1]) & 0xF
     #print "GrbitKey: " + hex(GrbitKey)
-    GrbitHashNull  = (struct.unpack("L",Struc[1:4]+"\x00")[0]) >> 4
+    GrbitHashNull  = (struct.unpack("=L",Struc[1:4]+"\x00")[0]) >> 4
     #print "GrbitHashNull: " + hex(GrbitHashNull)
 
     KeyNoNulls = Struc[4:8]
