@@ -13,3 +13,5 @@ After:
 
 ![After](https://cloud.githubusercontent.com/assets/5983995/20449698/017b703a-adfc-11e6-8f76-bfde4c759386.PNG "After")
 
+
+Tested on Windows 7.
