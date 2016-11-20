@@ -295,7 +295,7 @@ def EncodeGC(Value,Seed,DefaultIgnoredChar):
         IgnoredEnc += chr(ByteEnc)
         EncryptedByte2 = EncryptedByte1
         EncryptedByte1  = ByteEnc
-        UnencryptedByte1  = 228 #Any Value
+        UnencryptedByte1  = DefaultIgnoredChar #Any Value
 
     
     GC += IgnoredEnc
@@ -375,7 +375,7 @@ def EncodeCMG(Value,Seed,DefaultIgnoredChar):
         IgnoredEnc += chr(ByteEnc)
         EncryptedByte2 = EncryptedByte1
         EncryptedByte1  = ByteEnc
-        UnencryptedByte1  = 228 #Any Value
+        UnencryptedByte1  = DefaultIgnoredChar #Any Value
 
     
     CMG += IgnoredEnc
@@ -495,7 +495,7 @@ def Encode(Pwd,Key,Seed,DefaultIgnoredChar):
         IgnoredEnc += chr(ByteEnc)
         EncryptedByte2 = EncryptedByte1
         EncryptedByte1  = ByteEnc
-        UnencryptedByte1  = 228 #Any Value
+        UnencryptedByte1  = DefaultIgnoredChar #Any Value
 
     
     DPB += IgnoredEnc
@@ -819,7 +819,7 @@ CMG = EncodeCMG(0,Seed,IgnoredChar)
 sCMG = PrintHash(CMG).upper()
 print "New CMG: " + sCMG
 
-inDocXX = re.sub("CMG=\"([0-9a-zA-Z]{72,})\"","CMG=\""+sCMG+"\"",inDocX)
+inDocXX = re.sub("CMG=\"([0-9a-zA-Z]{22,})\"","CMG=\""+sCMG+"\"",inDocX,re.I)
 
 
 #---------------- GC
@@ -843,7 +843,7 @@ GC = EncodeGC(0xFF,Seed,IgnoredChar)
 sGC = PrintHash(GC).upper()
 print "New GC: " + sGC
 
-inDocXX = re.sub("GC=\"([0-9a-zA-Z]{16,})\"","GC=\""+sGC+"\"",inDocX)
+inDocXXX = re.sub("GC=\"([0-9a-zA-Z]{16,})\"","GC=\""+sGC+"\"",inDocXX,re.I)
 
 
 
@@ -856,7 +856,7 @@ inDocXX = re.sub("GC=\"([0-9a-zA-Z]{16,})\"","GC=\""+sGC+"\"",inDocX)
 fileN,fileExt = os.path.splitext(sys.argv[1])
 NewFileName = fileN + "_" + fileExt
 fOut = open(NewFileName,"wb")
-fOut.write(inDocXX)
+fOut.write(inDocXXX)
 fOut.close()
 
 print "New unprotected file written to " + NewFileName
