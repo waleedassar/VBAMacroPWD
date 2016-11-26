@@ -171,16 +171,16 @@ def GetGrbit(Input):
     if Num == 0:
         return KeyNoNulls
     InputLen = len(Input)
+    BinaryStr = ""
     for i in range(0,InputLen):
         if Input[i] == "\x00":
-            X = 0xFFFFFFFF ^ (1 << i)
-            #print hex(X)
-            KeyNoNulls = KeyNoNulls & X
+            BinaryStr += "0"
+        else:
+            BinaryStr += "1"
+    KeyNoNulls = int(BinaryStr,2)
     return KeyNoNulls
 
-def GetGrbitKey(Input):
-    KeyNoNulls = GetGrbit(Input) & 0xF
-    return KeyNoNulls
+
 
 
 
@@ -192,13 +192,12 @@ def CreateHashStructure(Pwd,Key):
     m = hashlib.sha1()
     m.update( All )
     Hash = m.digest()
-    GrbitKey = GetGrbitKey(sKey)
-    GrbithashNull = GetGrbit(Hash)
-    BothGrbits = (GrbithashNull << 4 | GrbitKey) & 0x00FFFFFF
+    BothGrbits = GetGrbit(sKey + Hash)
     BothGrbits_ = struct.pack("L",BothGrbits)
-    Struc += BothGrbits_[0]
-    Struc += BothGrbits_[1]
     Struc += BothGrbits_[2]
+    Struc += BothGrbits_[1]
+    Struc += BothGrbits_[0]
+    
     KeyNoNulls = EncodeNulls(sKey)
     Struc += KeyNoNulls
     PasswordHashNoNulls = EncodeNulls(Hash)

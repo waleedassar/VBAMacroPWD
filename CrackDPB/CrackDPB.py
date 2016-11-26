@@ -3,7 +3,7 @@ import struct
 import hashlib
 import re
 from random import randint
-
+import zipfile
 
 
 def IsHexChar(CharX):
@@ -138,15 +138,17 @@ def HexDump(Binary,Size=2,Sep=" "):
 def ApplyNulls(K,Bitmap):
     if K == "":
         return ""
+    
     KLen = len(K)
-    X = 1
     KK = ""
-    for i in range(0,KLen):
-        Y = X << i
+    ii = 0
+    for i in range(KLen,0,-1):
+        Y = 1 << (i-1)
         if Bitmap & Y == 0:
             KK += "\x00"
         else:
-            KK += K[i]
+            KK += K[ii]
+        ii += 1
     return KK
             
     
@@ -247,6 +249,10 @@ def Decode(In,InLen):
     return Data
 
 
+
+
+
+
 #return Key and Hash separated by :
 def DecodeHashStructure(Struc):
     if Struc == "":
@@ -258,13 +264,25 @@ def DecodeHashStructure(Struc):
     #print "Reserved: " + hex(Reserved)
     if Reserved != 0xFF:
         return ""
-    GrbitKey = ord(Struc[1]) & 0xF
+
+    A = Struc[1]
+    B = Struc[2]
+    C = Struc[3]
+    
+    BothGrbits = (struct.unpack("=L","\x00" + C + B + A)[0]) >> 8
+
+    
+    GrbitKey = ( ord(A) >> 4) & 0xF
+    GrbitKey_Again = (BothGrbits >> 20) & 0xF
     #print "GrbitKey: " + hex(GrbitKey)
-    GrbitHashNull  = (struct.unpack("L",Struc[1:4]+"\x00")[0]) >> 4
+    #print "GrbitKey_Again: " + hex(GrbitKey_Again)
+
+    GrbitHashNull  = BothGrbits & 0xFFFFF 
     #print "GrbitHashNull: " + hex(GrbitHashNull)
 
     KeyNoNulls = Struc[4:8]
     #print "KeyNoNulls: " + PrintHash(KeyNoNulls)
+
     Key = PrintHash(ApplyNulls(KeyNoNulls,GrbitKey))
     #print "Key: " + Key
 
@@ -309,6 +327,61 @@ def TestPassword(Pwd,Key,Hash):
     return False
 
 
+def ExtractOffice2007(inFile):
+    if inFile == "":
+        return 0
+    filenameX,fileextX = os.path.splitext(inFile)
+    try:
+        ZipZ = zipfile.ZipFile(inFile)
+        ZipZ.extractall(filenameX)
+        ZipZ.close()
+        print "Zip file was successfully extracted to " + "\\" + filenameX +"\\"
+    except:
+        print "Zip file is corrupt"
+        return 0
+    return 1
+
+
+def GetOffice2007VbaBin(inFile):
+    if inFile == "":
+        return ""
+    ret = ExtractOffice2007(inFile)
+    if ret == 0:
+        return ""
+    filenameX,fileextX = os.path.splitext(inFile)
+    dirX = filenameX
+    for fYf in os.listdir(dirX):
+        tgt = dirX + "\\" + fYf
+        if os.path.isfile(tgt)==False and os.path.exists(tgt + "\\vbaproject.bin")==True:
+            return tgt + "\\vbaproject.bin"
+    return ""
+
+def IsOffice2007(inFile):
+    if inFile == "":
+        return False
+
+    if os.path.getsize(inFile) < 4:
+        return False
+    
+    fInZ = open(inFile,"rb")
+    fConZ = fInZ.read(4)
+    fInZ.close()
+
+    if fConZ[0]!="P" or fConZ[1]!="K":
+        return False
+
+    mjv = fConZ[2]
+    mnv = fConZ[3]
+
+    v1 = (mjv == "\x03" and mnv == "\x04")
+    v2 = (mjv == "\x05" and mnv == "\x06")
+    v3 = (mjv == "\x07" and mnv == "\x08")
+    if v1 == False and v2 == False and v3 == False:
+        return False
+    return True
+
+
+
 #################################################
 
 argC = len(sys.argv)
@@ -316,10 +389,37 @@ if argC != 3:
     print "Usage: CrackDPB.py File.doc passwordlist.txt\r\n"
     sys.exit(-1)
 
+inF = sys.argv[1]
+if os.path.exists(inF) == False:
+    print "Input file does not exist\r\n"
+    sys.exit(-2)
 
-fDoc = open(sys.argv[1],"rb")
+
+Office2007 = False
+VbaBinFile = ""
+
+if IsOffice2007(inF) == True:
+    Office2007 = True
+
+
+if Office2007 == True:
+    VbaBinFile = GetOffice2007VbaBin(inF) #Will also extract zip contents
+    if VbaBinFile == "":
+        print "VbaProject.bin was not found in input Office2007 file\r\n"
+        sys.exit(-3)
+    inF = VbaBinFile
+
+
+
+
+fDoc = open(inF,"rb")
 inDoc = fDoc.read()
 fDoc.close()
+
+
+
+
+
 
 
 fList = open(sys.argv[2],"r")
@@ -357,9 +457,14 @@ else:
     Hash = GetPasswordHash(KeyNHash)
     print "Hash: " + Hash
     #Start cracking here
+    PassFound = False
     for Line in Lines:
         if TestPassword(Line.rstrip(),Key,Hash) == True:
             print "Password: " + Line
+            PassFound = True
+
+    if PassFound == False:
+        print "Password not found, please provide another password list\r\n"
     
 
 print "Done"

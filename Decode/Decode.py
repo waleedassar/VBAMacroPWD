@@ -131,18 +131,22 @@ def HexDump(Binary,Size=2,Sep=" "):
         i = i + 1
     return FinalCon
 
+
+
 def ApplyNulls(K,Bitmap):
     if K == "":
         return ""
+    
     KLen = len(K)
-    X = 1
     KK = ""
-    for i in range(0,KLen):
-        Y = X << i
+    ii = 0
+    for i in range(KLen,0,-1):
+        Y = 1 << (i-1)
         if Bitmap & Y == 0:
             KK += "\x00"
         else:
-            KK += K[i]
+            KK += K[ii]
+        ii += 1
     return KK
             
     
@@ -243,6 +247,15 @@ def Decode(In,InLen):
     return Data
 
 
+def RotateInteger(IntX):
+    if IntX == 0:
+        return 0
+    h = hex(IntX)[2:]
+    h_rev = h[::-1]
+    return int("0x" + h_rev,0x10)
+
+
+
 #return Key and Hash separated by :
 def DecodeHashStructure(Struc):
     if Struc == "":
@@ -254,13 +267,25 @@ def DecodeHashStructure(Struc):
     #print "Reserved: " + hex(Reserved)
     if Reserved != 0xFF:
         return ""
-    GrbitKey = ord(Struc[1]) & 0xF
+
+    A = Struc[1]
+    B = Struc[2]
+    C = Struc[3]
+    
+    BothGrbits = (struct.unpack("=L","\x00" + C + B + A)[0]) >> 8
+
+    
+    GrbitKey = ( ord(A) >> 4) & 0xF
+    GrbitKey_Again = (BothGrbits >> 20) & 0xF
     #print "GrbitKey: " + hex(GrbitKey)
-    GrbitHashNull  = (struct.unpack("L",Struc[1:4]+"\x00")[0]) >> 4
+    #print "GrbitKey_Again: " + hex(GrbitKey_Again)
+
+    GrbitHashNull  = BothGrbits & 0xFFFFF 
     #print "GrbitHashNull: " + hex(GrbitHashNull)
 
     KeyNoNulls = Struc[4:8]
     #print "KeyNoNulls: " + PrintHash(KeyNoNulls)
+
     Key = PrintHash(ApplyNulls(KeyNoNulls,GrbitKey))
     #print "Key: " + Key
 
@@ -273,6 +298,8 @@ def DecodeHashStructure(Struc):
     if Terminator != 0:
         return ""
     return Key + ":" + Hash
+
+
 
 #Extract salt
 def GetKey(Data):
