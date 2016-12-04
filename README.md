@@ -1,5 +1,5 @@
 # VBAMacroPWD
-Python scripts to remove, change, and crack Office 97-2003, Office 2007, and Office 2013 Macro Passwords
+Python scripts to remove, change, and crack Office 97-2003, Office 2007, Office 2010, and Office 2013 Macro Passwords
 Usage:
 ![Usage](https://cloud.githubusercontent.com/assets/5983995/20449705/0e4f583a-adfc-11e6-93ab-9f6ebd5eb50f.PNG "Usage")
 
@@ -14,6 +14,6 @@ After:
 ![After](https://cloud.githubusercontent.com/assets/5983995/20449698/017b703a-adfc-11e6-8f76-bfde4c759386.PNG "After")
 
 
-Tested on (Office 2003, Office 2007, and Office 2013 / Windows 7) against files in "Samples" folder.
+Tested on (Office 2003, Office 2007, Office 2010, and Office 2013 / Windows 7) against files in "Samples" folder.
 
 You can send me more samples waliedassar@gmail.com
