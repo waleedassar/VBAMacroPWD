@@ -14,6 +14,6 @@ After:
 ![After](https://cloud.githubusercontent.com/assets/5983995/20449698/017b703a-adfc-11e6-8f76-bfde4c759386.PNG "After")
 
 
-Tested on (Office 2003 and Office 2007 / Windows 7) against files in "Samples" folder.
+Tested on (Office 2003, Office 2007, and Office 2013 / Windows 7) against files in "Samples" folder.
 
 You can send me more samples waliedassar@gmail.com
